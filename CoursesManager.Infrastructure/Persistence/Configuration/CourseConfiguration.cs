@@ -2,13 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace CoursesManager.Infrastructure.Data.Configurations;
+namespace CoursesManager.Infrastructure.Presistence.Configurations;
 
 public class CourseConfiguration : IEntityTypeConfiguration<CourseEntity>
 {
     public void Configure(EntityTypeBuilder<CourseEntity> builder)
     {
-        builder.HasKey(e => e.CourseCode);
+        builder.HasKey(e => e.Id);
+
+        builder.HasIndex(e => e.CourseCode)
+            .IsUnique()
+            .HasDatabaseName("UX_Course_CourseCode");
 
         builder.Property(e => e.Title)
             .IsRequired()
@@ -19,12 +23,13 @@ public class CourseConfiguration : IEntityTypeConfiguration<CourseEntity>
             .HasMaxLength(200);
 
         builder.Property(e => e.CreatedAt)
-            .HasDefaultValueSql("GETUTCDATE()").HasColumnType("datetime2");
+            .HasColumnType("datetime2(0)")
+            .HasDefaultValueSql("SYSUTCDATETIME()");
 
-        builder.Property(e => e.UpdatedAt).HasColumnType("datetime2");
+        builder.Property(e => e.UpdatedAt)
+            .HasColumnType("datetime2(0)")
+            .HasDefaultValueSql("SYSUTCDATETIME()");
 
         builder.Property(e => e.RowVersion).IsRowVersion();
-
     }
 }
-

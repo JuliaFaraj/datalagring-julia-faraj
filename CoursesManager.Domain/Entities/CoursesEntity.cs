@@ -3,6 +3,7 @@ namespace CoursesManager.Domain.Entities;
 
 public class CourseEntity
 {
+    public int Id { get; set; }
     public string CourseCode { get; set; } = null!;
     public string Title { get; set; } = null!;
     public string Description { get; set; } = null!;

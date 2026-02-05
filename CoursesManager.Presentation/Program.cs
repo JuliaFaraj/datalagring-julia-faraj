@@ -1,21 +1,24 @@
+using CoursesManager.Application.Abstractions.Persistence;
 using CoursesManager.Application.Services;
-using CoursesManager.Domain.Interfaces;
-using CoursesManager.Infrastructure.Data;
-using CoursesManager.Infrastructure.Repositories;
+using CoursesManager.Infrastructure.Persistence;
+using CoursesManager.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
-using CoursesManager.Application.Helpers;
-
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// DI – repositories + services
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<CourseService>();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// DbContext
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    )
+);
 
 var app = builder.Build();
 
@@ -32,17 +35,7 @@ app.MapGet("/", () => Results.Ok("CoursesManager API is running"));
 app.MapGet("/courses", async (CourseService service) =>
 {
     var result = await service.GetAllCoursesAsync();
-
-    return result.Status switch
-    {
-        ResultStatus.Ok => Results.Ok(result.Data),
-        ResultStatus.NotFound => Results.NotFound(result.Message),
-        ResultStatus.Conflict => Results.Conflict(result.Message),
-        ResultStatus.Badrequest => Results.BadRequest(result.Message),
-        _ => Results.BadRequest(result.Message)
-    };
+    return Results.Ok(result);
 });
 
-
 app.Run();
-
