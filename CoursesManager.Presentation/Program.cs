@@ -1,4 +1,5 @@
 using CoursesManager.Application.Abstractions.Persistence;
+using CoursesManager.Application.Dtos;
 using CoursesManager.Application.Services;
 using CoursesManager.Infrastructure.Persistence;
 using CoursesManager.Infrastructure.Persistence.Repositories;
@@ -28,7 +29,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection();
 
 app.MapGet("/", () => Results.Ok("CoursesManager API is running"));
 
@@ -37,5 +38,16 @@ app.MapGet("/courses", async (CourseService service) =>
     var result = await service.GetAllCoursesAsync();
     return Results.Ok(result);
 });
+
+app.MapPost("/courses", async (CourseService service, CreateCourseDto dto) =>
+{
+    var result = await service.CreateCourseAsync(dto);
+
+    return result.Match(
+        created => Results.Created($"/courses/{created.Id}", created),
+        errors => Results.BadRequest(errors)
+    );
+});
+
 
 app.Run();
