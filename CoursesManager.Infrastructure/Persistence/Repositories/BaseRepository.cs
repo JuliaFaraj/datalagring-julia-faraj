@@ -15,12 +15,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         _table = _context.Set<TEntity>();
     }
 
-
-    public virtual async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> findBy)
-    {
-        return await _table.AnyAsync(findBy);
-    }
-
+    // CREATE
     public virtual async Task<TEntity> CreateAsync(TEntity entity, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(entity, nameof(entity));
@@ -29,13 +24,21 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         return entity;
     }
 
-
-
-    public virtual async Task<TEntity?> GetOneAsync(Expression<Func<TEntity, bool>> where, CancellationToken ct = default)
+    // READ
+    public virtual async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> findBy, CancellationToken ct = default)
     {
-        return await _table.Where(where).FirstOrDefaultAsync(ct);
+        return await _table.AnyAsync(findBy, ct);
     }
 
+    public virtual async Task<TEntity?> GetOneAsync(
+        Expression<Func<TEntity, bool>> where,
+        bool tracking = false,
+        CancellationToken ct = default,
+        params Expression<Func<TEntity, object>>[] includes)
+    {
+        var query = BuildQuery(tracking, includes);
+        return await query.FirstOrDefaultAsync(where, ct);
+    }
 
     public virtual async Task<IReadOnlyList<TEntity>> GetAllAsync(
         Expression<Func<TEntity, bool>>? where = null,
@@ -74,6 +77,23 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         return await query.Select(select).ToListAsync(ct);
     }
 
+    // UPDATE
+    public virtual void Update(TEntity entity)
+    {
+        _table.Update(entity);
+    }
+
+    // DELETE
+    public virtual void Remove(TEntity entity)
+    {
+        _table.Remove(entity);
+    }
+
+    // UNIT OF WORK
+    public virtual async Task<int> SaveChangesAsync(CancellationToken ct = default)
+    {
+        return await _context.SaveChangesAsync(ct);
+    }
 
     private IQueryable<TEntity> BuildQuery(bool tracking, params Expression<Func<TEntity, object>>[] includes)
     {
@@ -84,26 +104,4 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
 
         return query;
     }
-
-
-    public virtual async Task<TEntity> UpdateAsync(TEntity entity, CancellationToken ct = default)
-    {
-        _table.Update(entity);
-        await _context.SaveChangesAsync(ct);
-        return entity;
-    }
-
-
-
-
-    public virtual async Task<int> SaveChangesAsync(CancellationToken ct = default)
-    {
-        return await _context.SaveChangesAsync(ct);
-    }
-
-
-    //private bool IsDuplicateKey(DbUpdateException ex)
-    //    => ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627);
-
-
 }

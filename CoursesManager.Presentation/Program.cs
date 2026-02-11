@@ -16,9 +16,7 @@ builder.Services.AddScoped<CourseService>();
 
 // DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    )
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
 var app = builder.Build();
@@ -44,10 +42,29 @@ app.MapPost("/courses", async (CourseService service, CreateCourseDto dto) =>
     var result = await service.CreateCourseAsync(dto);
 
     return result.Match(
-        created => Results.Created($"/courses/{created.Id}", created),
+        created => Results.Created($"/courses/{created.CourseCode}", created),
         errors => Results.BadRequest(errors)
     );
 });
 
+app.MapPut("/courses/{courseCode}", async (string courseCode, CourseService service, UpdateCourseDto dto) =>
+{
+    var result = await service.UpdateCourseAsync(courseCode, dto);
+
+    return result.Match(
+        updated => Results.Ok(updated),
+        errors => Results.NotFound(errors)
+    );
+});
+
+app.MapDelete("/courses/{courseCode}", async (string courseCode, CourseService service) =>
+{
+    var result = await service.DeleteCourseAsync(courseCode);
+
+    return result.Match(
+        _ => Results.NoContent(),
+        errors => Results.NotFound(errors)
+    );
+});
 
 app.Run();
