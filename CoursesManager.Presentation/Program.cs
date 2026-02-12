@@ -37,6 +37,19 @@ app.MapGet("/courses", async (CourseService service) =>
     return Results.Ok(result);
 });
 
+
+app.MapGet("/courses/{courseCode}", async (string courseCode, CourseService service) =>
+{
+    var result = await service.GetCourseByCodeAsync(courseCode);
+
+    return result.Match(
+        course => Results.Ok(course),
+        errors => Results.NotFound(errors)
+    );
+});
+
+
+
 app.MapPost("/courses", async (CourseService service, CreateCourseDto dto) =>
 {
     var result = await service.CreateCourseAsync(dto);

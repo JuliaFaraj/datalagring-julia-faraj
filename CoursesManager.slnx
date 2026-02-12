@@ -3,4 +3,5 @@
   <Project Path="CoursesManager.Domain/CoursesManager.Domain.csproj" />
   <Project Path="CoursesManager.Infrastructure/CoursesManager.Infrastructure.csproj" />
   <Project Path="CoursesManager.Presentation/CoursesManager.Presentation.csproj" />
+  <Project Path="CoursesManager.Tests/CoursesManager.Tests.csproj" Id="4c459f58-a575-455a-9ca4-e3106e36e589" />
 </Solution>

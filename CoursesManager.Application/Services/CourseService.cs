@@ -45,6 +45,19 @@ public class CourseService(ICourseRepository courseRepository)
         );
     }
 
+    public async Task<ErrorOr<CourseDto>> GetCourseByCodeAsync(string courseCode, CancellationToken ct = default)
+    {
+        var course = await _courseRepository.GetOneAsync(
+            x => x.CourseCode == courseCode,
+            ct: ct);
+
+        if (course is null)
+            return Error.NotFound("Courses.NotFound", $"Course with '{courseCode}' was not found.");
+
+        return CourseMapper.ToCourseDto(course);
+    }
+
+
     public async Task<ErrorOr<CourseDto>> UpdateCourseAsync(string courseCode, UpdateCourseDto dto, CancellationToken ct = default)
     {
         // tracking:true eftersom vi ska ändra entity och spara
