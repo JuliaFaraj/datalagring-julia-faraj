@@ -32,6 +32,7 @@ public class CourseService(ICourseRepository courseRepository)
         return await _courseRepository.GetAllAsync(
             select: c => new CourseDto
             {
+                Id = c.Id,
                 CourseCode = c.CourseCode,
                 Title = c.Title,
                 Description = c.Description,
