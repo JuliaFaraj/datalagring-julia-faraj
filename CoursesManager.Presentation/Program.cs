@@ -1,4 +1,4 @@
-using CoursesManager.Application.Abstractions.Persistence;
+﻿using CoursesManager.Application.Abstractions.Persistence;
 using CoursesManager.Application.Dtos;
 using CoursesManager.Application.Services;
 using CoursesManager.Infrastructure.Persistence;
@@ -7,10 +7,24 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var corsPolicyName = "FrontendPolicy"; // <-- LÄGG IN DENNA
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// DI � repositories + services
+// CORS för React (Vite kör på 5173)
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(corsPolicyName, policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
+
+// DI – repositories + services
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<CourseService>();
 
@@ -27,6 +41,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// ✅ Aktivera CORS (lägg före endpoints)
+app.UseCors(corsPolicyName);
+
 // app.UseHttpsRedirection();
 
 app.MapGet("/", () => Results.Ok("CoursesManager API is running"));
@@ -37,7 +54,6 @@ app.MapGet("/courses", async (CourseService service) =>
     return Results.Ok(result);
 });
 
-
 app.MapGet("/courses/{courseCode}", async (string courseCode, CourseService service) =>
 {
     var result = await service.GetCourseByCodeAsync(courseCode);
@@ -47,8 +63,6 @@ app.MapGet("/courses/{courseCode}", async (string courseCode, CourseService serv
         errors => Results.NotFound(errors)
     );
 });
-
-
 
 app.MapPost("/courses", async (CourseService service, CreateCourseDto dto) =>
 {
