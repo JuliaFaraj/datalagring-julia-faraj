@@ -1,84 +1,146 @@
 import { useEffect, useState } from "react";
+import type { Course } from "./types/course";
+import { getCourses, updateCourse } from "./api/client";
 
-type Course = {
-  id: number;
-  courseCode: string;
-  title: string;
-  description: string;
-};
-
-function App() {
+export default function App() {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [courseCode, setCourseCode] = useState("");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const fetchCourses = async () => {
-    const response = await fetch("https://localhost:7032/courses");
-    const data = await response.json();
-    setCourses(data);
-  };
+  const [editing, setEditing] = useState<Course | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editError, setEditError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchCourses();
+    loadCourses();
   }, []);
 
-  const handleCreate = async () => {
-    await fetch("https://localhost:7032/courses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        courseCode,
-        title,
-        description,
-      }),
-    });
+  async function loadCourses() {
+    try {
+      const data = await getCourses();
+      setCourses(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Kunde inte hämta kurser.");
+    }
+  }
 
-    setCourseCode("");
-    setTitle("");
-    setDescription("");
-    fetchCourses();
-  };
+  function startEdit(c: Course) {
+    if (!c.courseCode) return; // skydd mot tom courseCode
+
+    setEditing(c);
+    setEditTitle(c.title);
+    setEditDescription(c.description);
+    setEditError(null);
+  }
+
+  function cancelEdit() {
+    setEditing(null);
+    setEditTitle("");
+    setEditDescription("");
+    setEditError(null);
+  }
+
+  async function saveEdit() {
+    if (!editing) return;
+
+    try {
+      setEditError(null);
+
+      await updateCourse(editing.courseCode, {
+        courseCode: editing.courseCode,
+        title: editTitle,
+        description: editDescription,
+        rowVersion: editing.rowVersion,
+      });
+
+      await loadCourses();
+      setEditing(null);
+    } catch (e) {
+      setEditError(
+        e instanceof Error ? e.message : "Kunde inte uppdatera kursen."
+      );
+    }
+  }
 
   return (
-    <div style={{ padding: "2rem" }}>
+    <div style={{ padding: 24, fontFamily: "system-ui" }}>
       <h1>Courses</h1>
 
-      <h3>Add course</h3>
-      <input
-        placeholder="Course code"
-        value={courseCode}
-        onChange={(e) => setCourseCode(e.target.value)}
-      />
-      <input
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
-      <input
-        placeholder="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
-      <button onClick={handleCreate}>Create</button>
+      {error && <p style={{ color: "crimson" }}>Fel: {error}</p>}
 
-      <hr />
+      {!error && courses.length === 0 && <p>No courses found.</p>}
 
-      {courses.length === 0 ? (
-        <p>No courses found.</p>
-      ) : (
-        courses.map((c) => (
-          <div key={c.id} style={{ marginBottom: "1rem" }}>
-            <h3>{c.title}</h3>
-            <p>{c.description}</p>
-            <small>{c.courseCode}</small>
-          </div>
-        ))
-      )}
+      <ul>
+        {courses.map((c) => (
+          <li key={c.id} style={{ marginBottom: 16 }}>
+            <strong>{c.courseCode}</strong> — {c.title}
+            <div style={{ opacity: 0.8 }}>{c.description}</div>
+
+            {editing?.id === c.id ? (
+              <div
+                style={{
+                  border: "1px solid #ccc",
+                  padding: 12,
+                  marginTop: 8,
+                }}
+              >
+                <div>
+                  <label>Titel</label>
+                  <br />
+                  <input
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                  />
+                </div>
+
+                <div style={{ marginTop: 8 }}>
+                  <label>Beskrivning</label>
+                  <br />
+                  <input
+                    value={editDescription}
+                    onChange={(e) =>
+                      setEditDescription(e.target.value)
+                    }
+                  />
+                </div>
+
+                {editError && (
+                  <p style={{ color: "crimson", marginTop: 8 }}>
+                    {editError}
+                  </p>
+                )}
+
+                <div style={{ marginTop: 8 }}>
+                  <button onClick={saveEdit}>Save</button>
+                  <button
+                    onClick={cancelEdit}
+                    style={{ marginLeft: 8 }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : !c.courseCode ? (
+              <span
+                style={{
+                  color: "crimson",
+                  display: "inline-block",
+                  marginTop: 8,
+                }}
+              >
+                Kan inte uppdatera (courseCode saknas)
+              </span>
+            ) : (
+              <button
+                onClick={() => startEdit(c)}
+                style={{ marginTop: 8 }}
+              >
+                Edit
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
-
-export default App;
