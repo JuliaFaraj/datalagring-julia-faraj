@@ -48,10 +48,29 @@ CoursesManager
 
 ## Starta projektet
 
-### Backend
-Kör projektet `CoursesManager.Presentation` i Visual Studio.
+## Starta projektet lokalt
 
-### Frontend
+### Backend (.NET API)
+1. Öppna solutionen i Visual Studio.
+2. Starta projektet:
+
+CoursesManager.Presentation
+
+
+API och Swagger startar på:
+
+https://localhost:7032/swagger
+
+
+---
+
+### Frontend (React + Vite)
+
+Gå till frontend-mappen:
+
 ```bash
 npm install
 npm run dev
+Frontend körs normalt på:
+
+http://localhost:5173
