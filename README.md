@@ -1,4 +1,4 @@
-# CoursesManager
+# Datalagring - CoursesManager
 
 Ett skolprojekt byggt med .NET och React där man kan hantera kurser via ett API.
 
