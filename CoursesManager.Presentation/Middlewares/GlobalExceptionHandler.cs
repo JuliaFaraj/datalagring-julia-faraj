@@ -8,7 +8,6 @@ namespace CoursesManager.Presentation.Middlewares
     {
         public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
         {
-            //logger
 
             httpContext.Response.StatusCode = exception switch
             {
@@ -31,21 +30,3 @@ namespace CoursesManager.Presentation.Middlewares
 }
 
 
-//var (statusCode, title, detail) = exception switch
-//{
-//    UniqueConstraintException => (StatusCodes.Status409Conflict, "Conflict", "Resourse already exists"),
-//    _ => (StatusCodes.Status500InternalServerError, "Server Error", "An unexpected error occured")
-//};
-
-
-//var pd = new ProblemDetails { Status = statusCode, Title = title, Detail = detail };
-
-//if (exception is UniqueConstraintException uex)
-//{
-//    var prop = (uex.ConstraintProperties != null && uex.ConstraintProperties.Count > 0) ? uex.ConstraintProperties[0] : null;
-//    var field = prop is null ? null : char.ToLowerInvariant(prop[0]) + prop[1..];
-
-//    pd.Detail = prop is null ? "Resourse already exists." : $"{prop} already exists.";
-//    pd.Extensions["code"] = "uniqe_violation";
-//    if (field is not null) pd.Extensions["field"] = field;
-//}

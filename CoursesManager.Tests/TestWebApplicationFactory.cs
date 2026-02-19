@@ -19,7 +19,6 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            // 1) Ta bort alla konfigurationer för AppDbContext (det är här UseSqlServer ligger)
             var dbContextConfigDescriptors = services
                 .Where(d => d.ServiceType == typeof(IDbContextOptionsConfiguration<AppDbContext>))
                 .ToList();
@@ -27,7 +26,6 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
             foreach (var d in dbContextConfigDescriptors)
                 services.Remove(d);
 
-            // 2) Ta bort DbContextOptions och AppDbContext själv
             var dbContextDescriptors = services
                 .Where(d =>
                     d.ServiceType == typeof(DbContextOptions<AppDbContext>) ||
@@ -37,7 +35,6 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
             foreach (var d in dbContextDescriptors)
                 services.Remove(d);
 
-            // 3) Lägg in SQLite in-memory
             _connection = new SqliteConnection("DataSource=:memory:");
             _connection.Open();
 
@@ -46,7 +43,6 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
                 options.UseSqlite(_connection);
             });
 
-            // 4) Skapa schema
             var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();

@@ -22,7 +22,6 @@ public class EnrollmentConfiguration : IEntityTypeConfiguration<EnrollmentEntity
             .HasForeignKey(x => x.CourseOccasionId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // En participant ska inte kunna registreras två gånger på samma tillfälle
         builder.HasIndex(x => new { x.ParticipantId, x.CourseOccasionId }).IsUnique();
 
         builder.Property(x => x.EnrolledAt).IsRequired();

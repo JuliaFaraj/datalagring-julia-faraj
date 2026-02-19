@@ -19,7 +19,6 @@ public sealed class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Plockar upp alla IEntityTypeConfiguration<T> i assemblyn (din CourseConfiguration)
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         modelBuilder.ApplyConfiguration(new TeacherConfiguration());
         modelBuilder.ApplyConfiguration(new ParticipantConfiguration());

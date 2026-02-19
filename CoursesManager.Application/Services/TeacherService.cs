@@ -69,7 +69,6 @@ public class TeacherService(ITeacherRepository teacherRepository)
             return Error.NotFound("Teachers.NotFound",
                 $"Teacher with '{teacherCode}' was not found.");
 
-        // Optimistic concurrency check
         if (!teacher.RowVersion.SequenceEqual(dto.RowVersion))
             return Error.Conflict("Teachers.Conflict",
                 "Updated by another user. Try again.");

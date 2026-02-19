@@ -60,7 +60,6 @@ public class CourseService(ICourseRepository courseRepository)
 
     public async Task<ErrorOr<CourseDto>> UpdateCourseAsync(string courseCode, UpdateCourseDto dto, CancellationToken ct = default)
     {
-        // tracking:true eftersom vi ska ändra entity och spara
         var course = await _courseRepository.GetOneAsync(
             x => x.CourseCode == courseCode,
             tracking: true,
@@ -70,7 +69,6 @@ public class CourseService(ICourseRepository courseRepository)
         if (course is null)
             return Error.NotFound("Courses.NotFound", $"Course with '{courseCode}' was not found.");
 
-        // Optimistic concurrency check
         if (!course.RowVersion.SequenceEqual(dto.RowVersion))
             return Error.Conflict("Courses.Conflict", "Updated by another user. Try again.");
 

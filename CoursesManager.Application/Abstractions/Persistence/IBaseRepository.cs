@@ -35,7 +35,6 @@ namespace CoursesManager.Application.Abstractions.Persistence
         );
 
         // UPDATE
-        // (För EF räcker det ofta att ändra entity + SaveChanges, men detta gör kontraktet tydligt)
         void Update(TEntity entity);
 
         // DELETE

@@ -84,7 +84,6 @@ public class CourseOccasionService(
 
         await _occasionRepo.SaveChangesAsync(ct);
 
-        // här kan navigationer vara null om de inte är laddade; för G kan vi returnera med teacherCode från teacher
         return new CourseOccasionDto(
             occasion.Id,
             occasion.OccasionCode,

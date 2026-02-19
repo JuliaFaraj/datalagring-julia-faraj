@@ -19,7 +19,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy(corsPolicyName, policy =>
     {
         policy
-            // Tillåt alla localhost-portar i 517x-serien (dev-only, men perfekt här)
+            
             .SetIsOriginAllowed(origin =>
                 origin.StartsWith("http://localhost:517") || origin.StartsWith("https://localhost:517"))
             .AllowAnyHeader()
@@ -43,7 +43,6 @@ builder.Services.AddScoped<CourseOccasionService>();
 builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 builder.Services.AddScoped<EnrollmentService>();
 
-// DbContext
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
@@ -56,14 +55,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Viktigt: CORS ska ligga tidigt i pipeline
 app.UseCors(corsPolicyName);
 
 app.UseHttpsRedirection();
 
 app.MapGet("/", () => Results.Ok("CoursesManager API is running"));
 
-// ===== Courses =====
+// Courses 
 app.MapGet("/courses", async (CourseService service) =>
 {
     var result = await service.GetAllCoursesAsync();
@@ -110,7 +108,7 @@ app.MapDelete("/courses/{courseCode}", async (string courseCode, CourseService s
     );
 });
 
-// ===== Teachers =====
+// Teachers 
 app.MapGet("/teachers", async (TeacherService service) =>
 {
     var result = await service.GetAllAsync();
@@ -133,7 +131,7 @@ app.MapPut("/teachers/{teacherCode}", async (string teacherCode, TeacherService 
 
     return result.Match(
         updated => Results.Ok(updated),
-        errors => Results.BadRequest(errors) // ok för G
+        errors => Results.BadRequest(errors) 
     );
 });
 
@@ -147,7 +145,7 @@ app.MapDelete("/teachers/{teacherCode}", async (string teacherCode, TeacherServi
     );
 });
 
-// ===== Participants =====
+// Participants 
 app.MapGet("/participants", async (ParticipantService service) =>
 {
     var result = await service.GetAllAsync();
@@ -184,7 +182,7 @@ app.MapDelete("/participants/{participantCode}", async (string participantCode, 
     );
 });
 
-// ===== Occasions =====
+//  Occasions 
 app.MapGet("/occasions", async (CourseOccasionService service) =>
 {
     var result = await service.GetAllAsync();
@@ -221,7 +219,7 @@ app.MapDelete("/occasions/{occasionCode}", async (string occasionCode, CourseOcc
     );
 });
 
-// ===== Enrollments =====
+// Enrollments 
 app.MapGet("/enrollments", async (EnrollmentService service) =>
 {
     var result = await service.GetAllAsync();

@@ -3,7 +3,7 @@
 public class TeacherEntity
 {
     public int Id { get; set; }
-    public string TeacherCode { get; set; } = null!; // stabilt “public id”
+    public string TeacherCode { get; set; } = null!; 
     public string FirstName { get; set; } = null!;
     public string LastName { get; set; } = null!;
     public string Email { get; set; } = null!;
@@ -12,6 +12,5 @@ public class TeacherEntity
     public DateTime UpdatedAt { get; set; }
     public byte[] RowVersion { get; set; } = null!;
 
-    // Navigation (valfritt men bra)
     public ICollection<CourseOccasionEntity> CourseOccasions { get; set; } = new List<CourseOccasionEntity>();
 }
