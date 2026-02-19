@@ -8,22 +8,24 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var corsPolicyName = "FrontendPolicy"; // <-- LÄGG IN DENNA
-
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// CORS för React (Vite kör på 5173)
+// CORS (React/Vite). Vite kan byta port (5173, 5174, 5175...) om den är upptagen.
+const string corsPolicyName = "FrontendPolicy";
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(corsPolicyName, policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy
+            // Tillåt alla localhost-portar i 517x-serien (dev-only, men perfekt här)
+            .SetIsOriginAllowed(origin =>
+                origin.StartsWith("http://localhost:517") || origin.StartsWith("https://localhost:517"))
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
-
 
 // DI – repositories + services
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
@@ -54,13 +56,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// ✅ Aktivera CORS (lägg före endpoints)
+// Viktigt: CORS ska ligga tidigt i pipeline
 app.UseCors(corsPolicyName);
 
-// app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
 app.MapGet("/", () => Results.Ok("CoursesManager API is running"));
 
+// ===== Courses =====
 app.MapGet("/courses", async (CourseService service) =>
 {
     var result = await service.GetAllCoursesAsync();
@@ -107,7 +110,7 @@ app.MapDelete("/courses/{courseCode}", async (string courseCode, CourseService s
     );
 });
 
-
+// ===== Teachers =====
 app.MapGet("/teachers", async (TeacherService service) =>
 {
     var result = await service.GetAllAsync();
@@ -130,7 +133,7 @@ app.MapPut("/teachers/{teacherCode}", async (string teacherCode, TeacherService 
 
     return result.Match(
         updated => Results.Ok(updated),
-        errors => Results.BadRequest(errors) // Conflict/NotFound hamnar också här, ok för G
+        errors => Results.BadRequest(errors) // ok för G
     );
 });
 
@@ -144,7 +147,7 @@ app.MapDelete("/teachers/{teacherCode}", async (string teacherCode, TeacherServi
     );
 });
 
-
+// ===== Participants =====
 app.MapGet("/participants", async (ParticipantService service) =>
 {
     var result = await service.GetAllAsync();
@@ -181,7 +184,7 @@ app.MapDelete("/participants/{participantCode}", async (string participantCode, 
     );
 });
 
-
+// ===== Occasions =====
 app.MapGet("/occasions", async (CourseOccasionService service) =>
 {
     var result = await service.GetAllAsync();
@@ -218,7 +221,7 @@ app.MapDelete("/occasions/{occasionCode}", async (string occasionCode, CourseOcc
     );
 });
 
-
+// ===== Enrollments =====
 app.MapGet("/enrollments", async (EnrollmentService service) =>
 {
     var result = await service.GetAllAsync();

@@ -1,9 +1,14 @@
-
 import type { Course, UpdateCourseDto } from "../types/course";
 
 const baseUrl = import.meta.env.VITE_API_URL;
 
-export async function getCourses() {
+type CreateCourseDto = {
+  courseCode: string;
+  title: string;
+  description: string;
+};
+
+export async function getCourses(): Promise<Course[]> {
   const res = await fetch(`${baseUrl}/courses`);
 
   if (!res.ok) {
@@ -14,22 +19,17 @@ export async function getCourses() {
   return res.json();
 }
 
-
-
 export async function updateCourse(
   courseCode: string,
   dto: UpdateCourseDto
 ): Promise<Course> {
-  const res = await fetch(
-    `${baseUrl}/courses/${encodeURIComponent(courseCode)}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(dto),
-    }
-  );
+  const res = await fetch(`${baseUrl}/courses/${encodeURIComponent(courseCode)}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(dto),
+  });
 
   if (!res.ok) {
     const text = await res.text();
@@ -44,4 +44,24 @@ export async function updateCourse(
   }
 
   return (await res.json()) as Course;
+}
+
+export async function createCourse(dto: CreateCourseDto): Promise<Course> {
+  const res = await fetch(`${baseUrl}/courses`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dto),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+
+    if (res.status === 409) {
+      throw new Error("CourseCode finns redan. Testa en annan kod.");
+    }
+
+    throw new Error(text || `Create failed (${res.status})`);
+  }
+
+  return res.json();
 }

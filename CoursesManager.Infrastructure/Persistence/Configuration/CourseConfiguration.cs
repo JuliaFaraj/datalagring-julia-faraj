@@ -31,5 +31,11 @@ public class CourseConfiguration : IEntityTypeConfiguration<CourseEntity>
             .HasDefaultValueSql("SYSUTCDATETIME()");
 
         builder.Property(e => e.RowVersion).IsRowVersion();
+
+        builder.Property(e => e.CourseCode)
+           .IsRequired()
+           .HasMaxLength(50);
+
     }
+
 }
